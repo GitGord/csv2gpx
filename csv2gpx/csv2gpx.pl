@@ -23,9 +23,7 @@ else {
 my $csv = Text::CSV->new(
 	{
 		binary           => 1,
-		sep_char         => ',',
 		allow_whitespace => 1,
-		escape_char      => '"',
 	}
 ) or carp( "Cannot use CSV: " . Text::CSV->error_diag() );
 open my $file_fh, '<:encoding(Latin1)', "$file"
@@ -35,7 +33,7 @@ close $file_fh;
 my $gpx = Geo::Gpx->new();
 
 foreach my $it (@all) {
-	$it =~ s/&amp,/&amp; /g;        # fix up a stupid line before we parse it
+	$it =~ s/&amp,/&amp; /g;      # fix up a stupid line before we parse it
 	$csv->parse($it);
 	my @columns = $csv->fields();
 	my $name    = $columns[2];
