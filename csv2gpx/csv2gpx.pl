@@ -1,4 +1,8 @@
 #!/usr/bin/perl
+# csv2gpx.pl by Gordon Croft
+# Copyright (c) 2018 Gordon Croft
+#
+
 use Modern::Perl '2014';
 use autodie;
 use Text::CSV;
