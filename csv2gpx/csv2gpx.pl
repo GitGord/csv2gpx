@@ -69,7 +69,6 @@ sub fix_it {
 	$temp =~ s/ *, +/,/;
 	$temp =~ s/\s+$//g;
 	$temp =~ s/&amp,/&amp; /g;
-	$temp =~ s/&[^amp]/&amp;/g;
 	$temp =~ s/&nbsp;map/ /g;
 	$temp =~ s/&amp;bsp;map//g;
 	$temp =~ s/\s+/ /g;
