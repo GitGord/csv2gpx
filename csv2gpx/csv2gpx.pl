@@ -30,7 +30,7 @@ my $csv = Text::CSV->new(
 		allow_whitespace => 1,
 	}
 ) or carp( "Cannot use CSV: " . Text::CSV->error_diag() );
-open my $file_fh, '<:encoding(utf8)', "$file"
+open my $file_fh, '<:encoding(UTF-8)', "$file"
   or carp "Can't open $file $!";
 my @all = <$file_fh>;
 close $file_fh;
@@ -55,7 +55,7 @@ foreach my $it (@all) {
 	$gpx->add_waypoint($wpt);
 }
 my $xml = $gpx->xml('1.0');
-open my $output_fh, '>:encoding(utf8)', "$out_file"
+open my $output_fh, '>:encoding(UTF-8)', "$out_file"
   or carp "Can't open $out_file $!";
 say $output_fh $xml;
 close $output_fh;
