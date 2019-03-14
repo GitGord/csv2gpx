@@ -11,6 +11,7 @@ use IO::Prompter;
 use utf8;
 use Unicode::Normalize;
 use Carp;
+use Encode::Guess;
 my $file;
 my $out_file;
 
@@ -30,13 +31,14 @@ my $csv = Text::CSV->new(
 		allow_whitespace => 1,
 	}
 ) or carp( "Cannot use CSV: " . Text::CSV->error_diag() );
-open my $file_fh, '<:encoding(UTF-8)', "$file"
+open my $file_fh, '<', "$file"
   or carp "Can't open $file $!";
 my @all = <$file_fh>;
 close $file_fh;
 my $gpx = Geo::Gpx->new();
 
 foreach my $it (@all) {
+	$it = big_guess($it);
 	$it =~ s/&amp,/&amp; /g;    # fix up a stupid line before we parse it
 	$csv->parse($it);
 	my @columns = $csv->fields();
@@ -79,4 +81,13 @@ sub fix_it {
 	$temp = NFKD($temp);
 	$temp =~ s/\p{NonspacingMark}//g;
 	return $temp;
+}
+
+sub big_guess {
+	my ($guess) = @_;
+	my $decoder = guess_encoding( $guess, 'utf8' );
+	$decoder = guess_encoding( $guess, 'iso-8859-1' ) unless ref $decoder;
+	die "Decoding failed $decoder" unless ref $decoder;
+	$guess = $decoder->decode($guess);
+	return $guess;
 }
