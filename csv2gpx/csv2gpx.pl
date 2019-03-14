@@ -75,9 +75,6 @@ sub fix_it {
 	$temp =~ s/&amp;bsp;map//g;
 	$temp =~ s/\s+/ /g;
 	$temp =~ s/&nbsp;/ /g;
-	$temp =~ s/\\xE9/\x{00E9}/g;
-	$temp =~ s/\\xE8/\x{00E8}/g;
-	$temp =~ s/\\xF4/\x{00F4}/g;
 	$temp = NFKD($temp);
 	$temp =~ s/\p{NonspacingMark}//g;
 	return $temp;
