@@ -5,13 +5,12 @@
 
 use Modern::Perl '2014';
 use autodie;
-use Text::CSV;
+use Text::CSV qw(csv);
 use Geo::Gpx;
 use IO::Prompter;
 use utf8;
 use Unicode::Normalize;
 use Carp;
-use Encode::Guess;
 my $file;
 my $out_file;
 
@@ -31,26 +30,15 @@ my $csv = Text::CSV->new(
 		allow_whitespace => 1,
 	}
 ) or carp( "Cannot use CSV: " . Text::CSV->error_diag() );
-open my $file_fh, '<', "$file"
-  or carp "Can't open $file $!";
-my @all = <$file_fh>;
-close $file_fh;
 my $gpx = Geo::Gpx->new();
-
-foreach my $it (@all) {
-	$it = big_guess($it);
-	$it =~ s/&amp,/&amp; /g;    # fix up a stupid line before we parse it
-	$csv->parse($it);
-	my @columns = $csv->fields();
-	my $name    = $columns[2];
-	my $desc    = join( ' ', splice @columns, 3 )
-	  ; #removes elements 3 to the end from array_ref and joins them with a space
+my $stuff = csv( in => "$file" );
+foreach my $it (@$stuff) {
+	my $name = fix_it( @$it[2] );
+	my $desc = fix_it( @$it[3] );
 	$name = $name . " (NOP)" if $desc =~ /NOP/;    # for Walmart
-	$name = fix_it($name);
-	$desc = fix_it($desc);
 	my $wpt = {
-		lat  => $columns[0],
-		lon  => $columns[1],
+		lat  => @$it[0],
+		lon  => @$it[1],
 		name => $name,
 		desc => $desc,
 	};
@@ -64,6 +52,10 @@ close $output_fh;
 
 sub fix_it {
 	my ($temp) = @_;
+	return unless $temp;
+	$temp =~ tr/\x00-\x09//d;
+	$temp =~ tr/\x0b-\x1f//d;
+	$temp =~ s/[\n|\r]/ /g;
 	$temp =~ s/</&lt;/g;
 	$temp =~ s/>/&gt;/g;
 	$temp =~ s/`/'/g;
@@ -74,17 +66,9 @@ sub fix_it {
 	$temp =~ s/&nbsp;map/ /g;
 	$temp =~ s/&amp;bsp;map//g;
 	$temp =~ s/\s+/ /g;
+	$temp =~ s/^,//;
 	$temp =~ s/&nbsp;/ /g;
 	$temp = NFKD($temp);
 	$temp =~ s/\p{NonspacingMark}//g;
 	return $temp;
-}
-
-sub big_guess {
-	my ($guess) = @_;
-	my $decoder = guess_encoding( $guess, 'utf8' );
-	$decoder = guess_encoding( $guess, 'iso-8859-1' ) unless ref $decoder;
-	die "Decoding failed $decoder" unless ref $decoder;
-	$guess = $decoder->decode($guess);
-	return $guess;
 }
